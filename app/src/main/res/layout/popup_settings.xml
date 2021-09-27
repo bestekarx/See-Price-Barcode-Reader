@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content" >
+
+
+
+    <LinearLayout
+        android:id="@+id/relativeLayout1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:background="@color/white"
+        android:orientation="vertical" >
+
+        <TableRow
+            style="@style/table_row_layout_style"
+            android:background="@color/titleBg" >
+            <LinearLayout
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_height="match_parent"
+                android:layout_width="match_parent">
+
+                <TextView
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:textColor="@color/white"
+                    android:fontFamily="@font/font_bold"
+                    android:layout_width="0dp"
+                    android:text="AYARLAR"
+                    android:layout_gravity="center|center_horizontal|center_vertical"
+                    android:layout_weight="30" />
+
+                <ImageButton
+                    android:scaleType="fitXY"
+                    android:id="@+id/button_close"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/close" />
+            </LinearLayout>
+        </TableRow>
+
+
+        <LinearLayout
+            android:layout_margin="5dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:background="@color/white"
+            android:orientation="vertical" >
+
+
+            <TableRow
+                android:id="@+id/syncSettingsRow1"
+                style="@style/table_row_layout_style">
+
+
+                <EditText
+                    android:hint="API URL"
+                    android:id="@+id/et_syncUrl"
+                    android:textColorHint="@color/black"
+                    android:layout_width="0dp"
+                    android:layout_weight="70"
+                    android:gravity="start"
+                    android:textColor="@color/black"
+                    android:fontFamily="@font/font_light"
+                    android:inputType="textUri" />
+
+            </TableRow>
+
+        </LinearLayout>
+
+        <include layout="@layout/normal_divider" />
+
+        <LinearLayout
+            style="@style/style_page_title"
+            android:orientation="horizontal">
+
+            <Button
+                android:layout_margin="2dp"
+                android:text="Test"
+                android:id="@+id/btnSave"
+                style="@style/style_bottom_button"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+</RelativeLayout>
