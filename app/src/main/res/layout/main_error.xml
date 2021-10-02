@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@android:color/transparent"
+    >
+
+
+    <LinearLayout
+        android:id="@+id/relativeLayout1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:background="@color/white"
+        android:orientation="vertical" >
+
+
+        <LinearLayout
+            android:layout_margin="5dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:background="@color/white"
+            android:orientation="horizontal" >
+
+
+
+            <LinearLayout
+                android:layout_marginLeft="10dp"
+                android:layout_gravity="center|center_horizontal|center_vertical"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:src="@drawable/triangle"
+                    android:id="@+id/img"
+                    android:scaleType="fitXY"
+                    android:layout_gravity="center|center_horizontal|center_vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <TextView
+                    android:fontFamily="@font/font_regular"
+                    android:textSize="18sp"
+                    android:layout_margin="10dp"
+                    android:id="@+id/txtParameterMessage"
+                    android:textColor="@color/black"
+                    android:textAlignment="center"
+                    android:layout_height="match_parent"
+                    android:layout_width="match_parent" />
+
+
+                <LinearLayout
+                    android:layout_gravity="center|center_horizontal|center_vertical"
+                    android:orientation="vertical"
+                    android:layout_margin="10dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:text="DATAPOS OTOMASYON"
+                        android:fontFamily="@font/font_regular"
+                        android:textColor="@color/black"
+                        android:layout_gravity="center_vertical|center_horizontal|center"
+                        android:gravity="center|center_horizontal|center_vertical"
+                        android:textSize="20sp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
+                    <TextView
+                        android:text="Teknik Destek Hattı"
+                        android:layout_gravity="center_vertical|center_horizontal|center"
+                        android:gravity="center|center_horizontal|center_vertical"
+                        android:textSize="17sp"
+                        android:fontFamily="@font/font_regular"
+                        android:textColor="@color/black"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
+                    <TextView
+                        android:text="0 364 225 4151 - 0 553 672 0819"
+                        android:textColor="@color/black"
+                        android:layout_gravity="center_vertical|center_horizontal|center"
+                        android:gravity="center|center_horizontal|center_vertical"
+                        android:textSize="16sp"
+                        android:fontFamily="@font/font_regular"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
+                    <TextView
+                        android:gravity="center|center_horizontal|center_vertical"
+                        android:layout_gravity="end"
+                        android:textColor="@color/black"
+                        android:fontFamily="@font/font_regular"
+                        android:id="@+id/txtMessage"
+                        android:text="www.eceyazilim.com"
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content" />
+
+                </LinearLayout>
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <include layout="@layout/normal_divider" android:id="@+id/divider"  />
+        <LinearLayout
+            style="@style/style_page_title"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnDialog"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@color/buttonColor"
+                android:text="Tekrar Dene"
+                android:textColor="@color/white"
+                android:visibility="visible" />
+        </LinearLayout>
+
+
+    </LinearLayout>
+</RelativeLayout>

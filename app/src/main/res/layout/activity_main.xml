@@ -11,13 +11,12 @@
         android:orientation="vertical"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_margin="40dp"
+        android:layout_margin="20dp"
         tools:ignore="MissingConstraints">
 
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:layout_marginBottom="20dp"
             android:orientation="vertical"
             tools:ignore="MissingConstraints">
 
@@ -162,6 +161,7 @@
                                 android:id="@+id/txt_price"
                                 android:layout_width="wrap_content"
                                 android:layout_height="match_parent"
+                                android:gravity="center"
                                 android:fontFamily="@font/slab"
                                 android:text="50"
                                 android:textColor="@color/Red"
@@ -169,13 +169,13 @@
 
                             <TextView
                                 android:id="@+id/txt_moneyUnit"
-
                                 android:layout_width="wrap_content"
                                 android:layout_height="match_parent"
+                                android:gravity="center"
                                 android:fontFamily="@font/slab"
-                                android:text="₺"
+                                android:text="₺\n.00"
                                 android:textColor="@color/Red"
-                                android:textSize="35sp" />
+                                android:textSize="22dp" />
 
                         </LinearLayout>
 
@@ -233,17 +233,18 @@
 
             <ImageView
                 android:id="@+id/img_settings"
-                android:layout_width="wrap_content"
+                android:layout_width="80dp"
                 android:layout_height="wrap_content"
-                android:scaleType="fitXY"
+                android:scaleType="centerCrop"
+                android:adjustViewBounds="true"
                 android:src="@drawable/ece_logo" />
 
             <ImageView
-                android:layout_width="wrap_content"
+                android:layout_width="80dp"
                 android:layout_height="wrap_content"
-                android:scaleType="fitXY"
-                android:src="@drawable/dp_logo"
-                android:layout_alignParentRight="true" />
+                android:layout_alignParentRight="true"
+            android:scaleType="centerInside"
+                android:src="@drawable/dp_logo" />
 
         </RelativeLayout>
 

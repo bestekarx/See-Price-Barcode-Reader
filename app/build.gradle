@@ -52,4 +52,12 @@ dependencies {
     implementation 'com.google.android.gms:play-services-mlkit-barcode-scanning:16.2.1'
 
     implementation "androidx.constraintlayout:constraintlayout:2.1.1"
+
+    // gson kütüphanesini ekleyelim
+    implementation 'com.google.code.gson:gson:2.8.8'
+
+    // retrofit kütüphanelerini ekleyelim
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    implementation "com.airbnb.android:lottie:4.1.0"
 }

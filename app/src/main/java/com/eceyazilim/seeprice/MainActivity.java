@@ -32,6 +32,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
 import android.util.Size;
@@ -48,6 +50,10 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.eceyazilim.seeprice.Models.Parameter;
+import com.eceyazilim.seeprice.Models.Query;
+import com.eceyazilim.seeprice.Models.QueryRequest;
+import com.eceyazilim.seeprice.Models.QueryResult;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -62,9 +68,15 @@ import com.google.mlkit.vision.common.InputImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 
 public class MainActivity extends AppCompatActivity
@@ -79,19 +91,13 @@ public class MainActivity extends AppCompatActivity
     private RelativeLayout container_preview; // kamera önizleme
     private PreviewView previewView;
     private RelativeLayout container_return; // tekrar oku
-    private Button btn_seePrice; // fiyat gör butonu
-    private ImageView img_settings; //ece logo settings
     private TextView txt_discount; //indirimli fiyat
     private TextView txt_price; //normal fiyat
     private TextView txt_productName; //ürün adı
     private TextView txt_stockCode; //stok kodu
-    private TextView txt_moneyUnit; //para birimi
-    private TextView txt_dotted; //detail layoutta ki dikey çizgi
-    private LinearLayout container_title; //test için click
-
-
-    private SharedPreferences settings;
+    private TextView txt_moneyUnit; //stok kodu
     private SharedPreferences.Editor editor;
+    private int testx = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -100,85 +106,189 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         activity = this;
-        settings = activity.getSharedPreferences(Constants.APP_SETTINGS_STATUS, 0);
+        SharedPreferences settings = activity.getSharedPreferences(Constants.APP_SETTINGS_STATUS, 0);
         editor = settings.edit();
-
         previewView = findViewById(R.id.previewView);
 
         cameraExecutor = Executors.newSingleThreadExecutor();
         cameraProviderFuture = ProcessCameraProvider.getInstance(this);
         analyzer = new MyImageAnalyzer();
-        cameraProviderFuture.addListener((Runnable) () ->
-        {
-            try
-            {
-                if(ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA) != (PackageManager.PERMISSION_GRANTED))
-                {
-                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CAMERA},101);
-                }
-                else
-                {
-                    ProcessCameraProvider processCameraProvider = (ProcessCameraProvider) cameraProviderFuture.get();
-                    bindPreview(processCameraProvider);
-                }
-            }
-            catch (ExecutionException | InterruptedException e){
-                e.printStackTrace();
-            }
-        }, ContextCompat.getMainExecutor(this));
 
         //elements
         txt_title = findViewById(R.id.txt_title);
         container_preview = findViewById(R.id.container_preview);
         container_return = findViewById(R.id.container_return);
 
-        txt_dotted  = findViewById(R.id.txt_dotted);
         txt_price  = findViewById(R.id.txt_price);
-        txt_moneyUnit  = findViewById(R.id.txt_moneyUnit);
         txt_stockCode = findViewById(R.id.txt_stockCode);
         txt_productName  = findViewById(R.id.txt_productName);
-        img_settings = findViewById(R.id.img_settings);
+        txt_moneyUnit  = findViewById(R.id.txt_moneyUnit);
 
         //üstü çizili indirim textview
         txt_discount = findViewById(R.id.txt_discount);
         txt_discount.setPaintFlags(txt_discount.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
 
-        btn_seePrice = findViewById(R.id.btn_seePrice);
+        // fiyat gör butonu
+        Button btn_seePrice = findViewById(R.id.btn_seePrice);
         Typeface typeface = Typeface.createFromAsset(getAssets(), "circular_bold.ttf");
         btn_seePrice.setTypeface(typeface);
-
-        container_title = findViewById(R.id.container_title);
-        container_title.setOnClickListener(view ->
+        btn_seePrice.setOnClickListener(view ->
         {
+            container_preview.setVisibility(View.VISIBLE);
+            container_return.setVisibility(View.GONE);
 
-            txt_discount.setText("30₺");
-            txt_price.setText("25");
-            txt_productName.setText("40 YAPRAK ÇİZGİLİ DEFTER - ECE YAYINLARI");
-            txt_stockCode.setText("SKU: 4564123456798");
-
-            container_preview.setVisibility(View.GONE);
-            container_return.setVisibility(View.VISIBLE);
+            ResetQuery();
         });
 
-        btn_seePrice.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                container_preview.setVisibility(View.VISIBLE);
-                container_return.setVisibility(View.GONE);
-            }
-        });
-
+        ImageView img_settings = findViewById(R.id.img_settings);
         img_settings.setOnLongClickListener(view -> {
             showPopupSYNC();
             return false;
         });
+
+        //parameter
+        RestInterface restInterface = ApiClient.getRetrofit().create(RestInterface.class);
+        Call<Parameter> call = restInterface.getParameter();
+        call.enqueue(new Callback<Parameter>()
+        {
+            @Override
+            public void onResponse(Call<Parameter> call, Response<Parameter> response)
+            {
+                //OK değilse her zaman hata ver.
+                if(response.code() == 200){
+                    txt_title.setText(response.body().getResult().getFirmname());
+                }
+                else {
+                    Application.dlgNoLicenceWarning(activity);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Parameter> call, Throwable t)
+            {
+                Application.dlgNoLicenceWarning(activity);
+            }
+        });
+
+        ResetQuery();
     }
+
+    private void ResetQuery()
+    {
+        txt_productName.setText("");
+        txt_stockCode.setText("");
+        txt_price.setText("");
+        txt_discount.setText("");
+        txt_moneyUnit.setText("");
+        txt_discount.setVisibility(View.VISIBLE);
+
+        container_preview.setVisibility(View.VISIBLE);
+        container_return.setVisibility(View.GONE);
+
+        StartCamera();
+    }
+
+    private void StartCamera()
+    {
+        cameraProviderFuture.addListener(() ->
+        {
+            try
+            {
+                if(ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA) != (PackageManager.PERMISSION_GRANTED))
+                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CAMERA},101);
+                else
+                {
+                    bindPreview((ProcessCameraProvider) cameraProviderFuture.get());
+                }
+            }
+            catch (ExecutionException | InterruptedException e){
+                e.printStackTrace();
+            }
+        }, ContextCompat.getMainExecutor(this));
+    }
+
+    private void StopCamera(Barcode b)
+    {
+        cameraProviderFuture.addListener(() ->
+        {
+            try
+            {
+                ProcessCameraProvider v = (ProcessCameraProvider) cameraProviderFuture.get();
+                v.unbindAll();
+                testx +=1;
+
+                QueryRequest(b.getDisplayValue());
+            }
+            catch (ExecutionException | InterruptedException e){
+                e.printStackTrace();
+            }
+        }, ContextCompat.getMainExecutor(this));
+    }
+
+    private void QueryRequest(String barcode)
+    {
+        QueryRequest request = new QueryRequest();
+        request.setBarcode(barcode);
+        //query
+        RestInterface restInterface = ApiClient.getRetrofit().create(RestInterface.class);
+
+        Call<Query> call = restInterface.query(request);
+        call.enqueue(new Callback<Query>()
+        {
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void onResponse(Call<Query> call, Response<Query> response)
+            {
+                //OK değilse her zaman hata ver.
+                if(response.code() == 200)
+                {
+                    QueryResult result = response.body().getResult();
+                    if(result != null)
+                    {
+                        //ürün adı
+                        txt_productName.setText(result.getProductname());
+                        //stok kodu
+                        txt_stockCode.setText("SKU"+result.getStockcode());
+                        //indirimli fiyat (varsa)
+                        if(result.getPricelist() != null)
+                            txt_discount.setText(result.getPricelist().toString());
+                        else
+                            txt_discount.setVisibility(View.GONE);
+
+                        txt_price.setText(result.getPrice().toString());
+
+                        container_preview.setVisibility(View.GONE);
+                        container_return.setVisibility(View.VISIBLE);
+
+
+                        final Handler handler = new Handler(Looper.getMainLooper());
+                        handler.postDelayed(() -> ResetQuery(), 30000);
+                    }
+                    else {
+                        Toast.makeText(getApplicationContext(), "Ürün bulunamadı. " + testx,Toast.LENGTH_LONG).show();
+                    }
+                }
+                else
+                {
+                    Toast.makeText(getApplicationContext(), "Ürün bulunamadı." + testx,Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Query> call, Throwable t)
+            {
+                Application.dlgNoLicenceWarning(activity);
+            }
+        });
+    }
+
+
 
     private void showPopupSYNC()
     {
         final Dialog dialog = new Dialog(activity);
         dialog.setContentView(R.layout.popup_settings);
-        dialog.getWindow().getAttributes().windowAnimations = R.style.AnimationPopup;
+        //dialog.getWindow().getAttributes().windowAnimations = R.style.AnimationPopup;
 
         ImageButton button_close = dialog.findViewById(R.id.button_close);
         button_close.setOnClickListener(view -> dialog.dismiss());
@@ -191,7 +301,6 @@ public class MainActivity extends AppCompatActivity
 
 
         et_syncUrl.setText(Application.APP_SYNC_URL);
-
 
         btnSave.setOnClickListener(v ->
         {
@@ -210,7 +319,6 @@ public class MainActivity extends AppCompatActivity
         dialog.getWindow().setLayout(widths, ViewGroup.LayoutParams.WRAP_CONTENT);
         dialog.show();
     }
-
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -246,50 +354,36 @@ public class MainActivity extends AppCompatActivity
     public  class MyImageAnalyzer implements ImageAnalysis.Analyzer
     {
         @Override
-        public void analyze(@NonNull ImageProxy image){
+        public void analyze(@NonNull ImageProxy image)
+        {
             scanbarcode(image);
         }
 
         @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-        private void scanbarcode (ImageProxy image){
+        private void scanbarcode (ImageProxy image)
+        {
             @SuppressLint("UnsafeOptInUsageError") Image image1 = image.getImage();
             assert image1 != null;
             InputImage inputImage = InputImage.fromMediaImage(image1, image.getImageInfo().getRotationDegrees());
-            BarcodeScannerOptions options = new BarcodeScannerOptions.Builder().build();
+            //BarcodeScannerOptions options = new BarcodeScannerOptions.Builder().build();
             BarcodeScanner scanner = BarcodeScanning.getClient();
 
-            Task<List<Barcode>> result = scanner.process(inputImage)
-                    .addOnSuccessListener(new OnSuccessListener<List<Barcode>>() {
-                        @Override
-                        public void onSuccess(List<Barcode> barcodes)
+            scanner.process(inputImage)
+                    .addOnSuccessListener(barcodes ->
+                    {
+                        //listenin sonunda ki barkodu al.
+                        if(barcodes.size() > 0)
                         {
-                            // Task completed successfully
-                            readerBarcodeData(barcodes);
+                            Barcode barcode = barcodes.get(barcodes.size() - 1);
+                            StopCamera(barcode);
                         }
                     })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e)
-                        {
-                            // Task failed with an exception
-                            Toast.makeText(getApplicationContext(), "Okuma sırasında bir hata oluştu. Lütfen daha sonra tekrar deneyiniz.",Toast.LENGTH_LONG).show();
-
-                        }
-                    }).addOnCompleteListener(new OnCompleteListener<List<Barcode>>() {
-                        @Override
-                        public void onComplete(@NonNull Task<List<Barcode>> task) {
-                            image.close();
-                        }
-                    });
-        }
-
-        private void readerBarcodeData(List<Barcode> barcodes) {
-            for (Barcode barcode: barcodes)
-            {
-                Toast.makeText(getApplicationContext(), barcode.getDisplayValue(),Toast.LENGTH_LONG).show();
-            }
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(getApplicationContext(), "Okuma sırasında bir hata oluştu. Lütfen daha sonra tekrar deneyiniz.",Toast.LENGTH_LONG).show();
+                    }).addOnCompleteListener(task ->{
+                image.close();
+            });
         }
     }
-
 }
 
